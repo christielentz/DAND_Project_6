@@ -72,7 +72,9 @@ From here, we will look at the distribution of each of the 12 variables, beginni
 ```{r echo=FALSE}
 #Histogram of quality
 ggplot(aes(quality), data=wines)+
-  geom_bar(width=1, aes(fill=quality.factor))
+  geom_bar(width=1, aes(fill=quality.factor))+
+  guides(fill=FALSE)
+
 ```
 
 We can see that the wines in this data set are fairly normally distributed, with most wines in the middle of the quality scale; in fact, there is not even a single wine with quality 1, 2, or 10.
@@ -328,11 +330,13 @@ Within the histograms of individual variables, I cut off the top 1% of the data 
 
 To begin with, we can look at the paired interactions between the variables.
 
-```{r, fig.height=12, fig.width=10, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, fig.height=8, fig.width=10, echo=FALSE, message=FALSE, warning=FALSE}
 #Plot interactions between all variable pairs
 ggpairs(wines, progress=F,
-        columnLabels = gsub('.', ' ', colnames(wines), fixed = T),
-        labeller = label_wrap_gen(width=12))
+        columnLabels = gsub('.', '\n', colnames(wines), fixed = T))+
+          theme(text = element_text(size=8), 
+                axis.text.x = element_text(angle = 45, 
+                                           vjust = 1, hjust = 1, size=6))
 ```
 
 It is difficult to see the small details due to the scale of the plot, but this still shows us the most obvious trends, as well as provides correlation coefficients for each pair of variables. From these plots, we see several weak correlations with quality, and no strong ones.  For the sake of having a cutoff, I will look more closely at any correlation coefficients above 0.1:
@@ -874,8 +878,8 @@ The first multivariate plot that I want to look at is one with alcohol, density,
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #Plot density versus alcohol, with residual sugar added as a third categorial variable
 ggplot(aes(density, alcohol), data=wines)+
-  geom_jitter(aes(color=residual.sugar.bucket), alpha=1/10)+
-  scale_color_brewer(type = 'div', palette = 'Set1',
+  geom_point(aes(color=residual.sugar.bucket), alpha=1/10)+
+  scale_color_brewer(palette = 'Set1',
     guide = guide_legend(title = 'Residual Sugar',
     override.aes = list(alpha = 1, size = 2)))+
   xlim(quantile(wines$density, 0.01),
@@ -894,12 +898,15 @@ From here, we can begin to add other variables to the plot.  To add a fourth var
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #Create a plot of density vs alcohol, with residual sugar and quality added as categorical variables.  
 ggplot(aes(density, alcohol), data=wines)+
-  geom_jitter(aes(color=quality.bucket, shape=residual.sugar.bucket), size=2, alpha=1/5)+
+  geom_point(aes(color=quality.bucket, shape=residual.sugar.bucket), alpha=0.8)+
   labs(shape='Residual Sugar')+
   xlim(quantile(wines$density, 0.01), quantile(wines$density, 0.99))+
-  scale_color_brewer(type = 'div',palette="YlGnBu",
-    guide = guide_legend(title = 'Quality',
-    override.aes = list(alpha = 1, size = 2)))
+  scale_color_brewer(palette="RdYlBu",
+                     name='Quality',
+                     direction = -1)+
+    guides(color = guide_legend(override.aes = list(alpha = 1, size = 2)), 
+           shape = guide_legend(override.aes = list(alpha = 1, size = 2),
+                                title = 'Residual\nSugar'))
 ```
 
 We see here that, other than a few outliers, the high quality data is present at low density, and high alcohol content.  We also see that most of the data falls into the medium quality range, which we saw in our initial histogram.
@@ -913,12 +920,15 @@ Next, we can look at chlorides:
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #Create a plot of density vs alcohol, with residual sugar and chloride added as categorical variables. 
 ggplot(aes(density, alcohol), data=wines)+
-  geom_jitter(aes(color=chloride.bucket, shape=residual.sugar.bucket), size=2, alpha=1/5)+
+  geom_point(aes(color=chloride.bucket, shape=residual.sugar.bucket), alpha=0.8)+
   labs(shape='Residual Sugar')+
   xlim(quantile(wines$density, 0.01), quantile(wines$density, 0.99))+
-  scale_color_brewer(type = 'div', palette='YlGnBu',
-    guide = guide_legend(title = 'Chlorides',
-    override.aes = list(alpha = 1, size = 2)))
+  scale_color_brewer(palette="RdYlBu",
+                     name='Chloride\nLevels',
+                     direction = -1)+
+    guides(color = guide_legend(override.aes = list(alpha = 1, size = 2)), 
+           shape = guide_legend(override.aes = list(alpha = 1, size = 2),
+                                title = 'Residual\nSugar'))
 ```
  
 Chlorides trend such that low chlorides are seen at low alcohol, and high chlorides at high alcohol.  Because the colors appear actually fairly neatly in horizontal bands, the chlorides seem to correlate with alcohol content much more than with density or residual sugar.  We see that the high chloride wines, for example, have a wide range of density values, and encompass both residual sugar ranges.  However, the bulk of the values are mostly limited to a small range of alcohol content.
@@ -928,12 +938,16 @@ Next, we can look at the bound sulfur dioxide:
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #Create a plot of density vs alcohol, with residual sugar and bound SO2 added as categorical variables. 
 ggplot(aes(density, alcohol), data=wines)+
-  geom_jitter(aes(color=bound.SO2.bucket, shape=residual.sugar.bucket), size=2, alpha=1/5)+
+  geom_point(aes(color=bound.SO2.bucket, shape=residual.sugar.bucket), alpha=0.8)+
   labs(shape='Residual Sugar')+
   xlim(quantile(wines$density, 0.01), quantile(wines$density, 0.99))+
-  scale_color_brewer(type = 'div',palette="YlGnBu",
-    guide = guide_legend(title = 'Bound Sulfur Dioxide',
-    override.aes = list(alpha = 1, size = 2)))
+  scale_color_brewer(palette="RdYlBu",
+                     name='Bound\nSulfur\nDioxide\nLevels',
+                     direction = -1)+
+    guides(color = guide_legend(override.aes = list(alpha = 1, size = 2)), 
+           shape = guide_legend(override.aes = list(alpha = 1, size = 2),
+                                title = 'Residual\nSugar'))
+  
 ```
 
 This is an interesting plot, because it seems that the bound sulfur dioxide may be related to alcohol, density, and residual sugar. One thing to consider here is that sulfur dioxide can bind to residual sugars (Source: https://www.accuvin.com/wp-content/uploads/2015/04/How-SO2-and-pH-are-Linked.pdf).  So it makes sense that when there is higher residual sugar content, we see more bound SO~2~.  In general, we seem to see higher amounts of bound sulfur dioxide at low alcohol, high density, and high residual sugar.
@@ -944,13 +958,16 @@ Lastly, we can look at the volatile acidity.  It is not correlated with density,
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #Create a plot of density vs alcohol, with residual sugar and volatile acidity added as categorical variables. 
 ggplot(aes(density, alcohol), data=wines)+
-  geom_jitter(aes(color=volatile.acidity.bucket, 
-                  shape=residual.sugar.bucket), size=2, alpha=1/5)+
+  geom_point(aes(color=volatile.acidity.bucket, 
+                  shape=residual.sugar.bucket), alpha=.8)+
   labs(shape='Residual Sugar')+
   xlim(quantile(wines$density, 0.01), quantile(wines$density, 0.99))+
-  scale_color_brewer(type = 'div',palette="YlGnBu",
-    guide = guide_legend(title = 'Volatile Acidity',
-    override.aes = list(alpha = 1, size = 2)))
+  scale_color_brewer(palette="RdYlBu",
+                     name='Volatile\nAcidity',
+                     direction = -1)+
+    guides(color = guide_legend(override.aes = list(alpha = 1, size = 2)), 
+           shape = guide_legend(override.aes = list(alpha = 1, size = 2),
+                                title = 'Residual\nSugar'))
 ```
 
 Ultimately, this just shows what we knew:  volatile acidity is not correlated with these other variables.  Interestingly, it seems that there are more high volatile acidity wines at the high and low end of the alcohol spectrum, with lower volatile acidity in the middle.  
